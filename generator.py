@@ -115,8 +115,8 @@ def generate_key_contracts_table(slide, contracting_data, position):
     headers = ["ID", "Name", "Short description", "Term", "Exp. date", "TCV (€m)"]
     cols = len(headers)
 
-    # Define column widths (in cm) - total should sum to 19
-    col_widths = [2.5, 3.5, 5, 3, 2.5, 2.5]  # Adjusted to sum to 19 cm
+    # Define column widths in cm - total sums to 19
+    col_widths = [2.5, 3.5, 5, 3, 2.5, 2.5]   
     
     # Determine the number of rows: Data rows or a single empty row if no data
     rows = len(contracting_data) if not contracting_data.empty else 1

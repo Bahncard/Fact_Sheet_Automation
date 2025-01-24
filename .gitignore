@@ -1,5 +1,7 @@
 clean_tables/
-mock_tables/
-temp/
 output/
 plots/
+
+# Ignore mock_tables folder but not mock_tables.py
+mock_tables/*
+!mock_tables/mock_tables.py
