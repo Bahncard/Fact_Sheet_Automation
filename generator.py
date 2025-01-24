@@ -101,7 +101,7 @@ def simulate_historical_spend(it_spend):
     return simulated_data
 
 
-# Add a Key Contracts table to the slide.
+
 def generate_key_contracts_table(slide, contracting_data, position):
     """
     Add a Key Contracts table to the slide.
@@ -111,72 +111,147 @@ def generate_key_contracts_table(slide, contracting_data, position):
         contracting_data (DataFrame): Filtered contracting data for the vendor.
         position (tuple): Coordinates (left, top) for the table.
     """
+
     # Define table headers
     headers = ["ID", "Name", "Short description", "Term", "Exp. date", "TCV (€m)"]
     cols = len(headers)
-
-    # Define column widths in cm - total sums to 19
-    col_widths = [2.5, 3.5, 5, 3, 2.5, 2.5]   
     
-    # Determine the number of rows: Data rows or a single empty row if no data
-    rows = len(contracting_data) if not contracting_data.empty else 1
+    # Define column widths (in cm) - total should sum to 19
+    col_widths = [2.5, 3.5, 5, 3, 2.5, 2.5]  # Adjusted to sum to 19 cm
+    
+    # Determine the number of rows
+    rows = min(len(contracting_data), 4) if not contracting_data.empty else 1
 
-    # Create the table
-    table = slide.shapes.add_table(rows + 1, cols, Cm(position[0]), Cm(position[1]), Cm(15), Cm(5)).table
+    # Create the table with specific dimensions
+    table = slide.shapes.add_table(
+        rows + 1,  # +1 for header row
+        cols,
+        Cm(position[0]),
+        Cm(position[1]),
+        Cm(19),    # Total width changed to 19 cm
+        Cm(4)
+    ).table
 
-    # Add headers to the first row
+    # Set column widths
+    for i, width in enumerate(col_widths):
+        table.columns[i].width = Cm(width)
+
+    # Format headers
     for col_idx, header in enumerate(headers):
-        table.cell(0, col_idx).text = header
+        cell = table.cell(0, col_idx)
+        cell.text = header
+        # Set font for header
+        paragraph = cell.text_frame.paragraphs[0]
+        paragraph.font.size = Pt(9)
+        paragraph.font.name = "Arial"
+        paragraph.font.bold = True
 
     # Reset the index of the contracting data
     contracting_data = contracting_data.reset_index(drop=True)
 
     # Populate the table rows
     if not contracting_data.empty:
-        # Fill rows with data if available
-        for row_idx, row in contracting_data.iterrows():
-            table.cell(row_idx + 1, 0).text = str(row.get("[PCW] Contract Id", ""))
-            table.cell(row_idx + 1, 1).text = str(row.get("[PCW]Contract (Contract)", ""))
-            table.cell(row_idx + 1, 2).text = str(row.get("[PCW] Description", ""))
-            term_start = row.get("[PCW]Contract (Effective Date)", "")
-            term_end = row.get("[PCW]Contract (Expiration Date)", "")
-            if pd.notna(term_start) and pd.notna(term_end):
-                table.cell(row_idx + 1, 3).text = f"{term_start.year} - {term_end.year}"
-            else:
-                table.cell(row_idx + 1, 3).text = "N/A"
-            table.cell(row_idx + 1, 4).text = str(term_end.date()) if pd.notna(term_end) else "N/A"
-            table.cell(row_idx + 1, 5).text = str(round(row.get("sum(Contract Amount) (€m)", 0), 2))
+        for row_idx in range(min(rows, len(contracting_data))):
+            row = contracting_data.iloc[row_idx]
+            # Populate and format each cell
+            cells = [
+                (str(row.get("[PCW] Contract Id", ""))[:8], 0),
+                (str(row.get("[PCW]Contract (Contract)", ""))[:15], 1),
+                (str(row.get("[PCW] Description", ""))[:25], 2),
+                (f"{row.get('[PCW]Contract (Effective Date)', '').year}-{row.get('[PCW]Contract (Expiration Date)', '').year}" 
+                 if pd.notna(row.get('[PCW]Contract (Effective Date)', '')) else "N/A", 3),
+                (str(row.get('[PCW]Contract (Expiration Date)', '').date()) 
+                 if pd.notna(row.get('[PCW]Contract (Expiration Date)', '')) else "N/A", 4),
+                (str(round(row.get("sum(Contract Amount) (€m)", 0), 1)), 5)
+            ]
+            
+            for text, col in cells:
+                cell = table.cell(row_idx + 1, col)
+                cell.text = text
+                # Set font for cell
+                paragraph = cell.text_frame.paragraphs[0]
+                paragraph.font.size = Pt(9)
+                paragraph.font.name = "Arial"
     else:
-        # Fill a single empty row if no data
+        # Fill empty row with formatted cells
         for col_idx in range(cols):
-            table.cell(1, col_idx).text = ""
-# Add a Planned Projects table to the slide.
+            cell = table.cell(1, col_idx)
+            cell.text = ""
+            paragraph = cell.text_frame.paragraphs[0]
+            paragraph.font.size = Pt(9)
+            paragraph.font.name = "Arial"
+
 def generate_planned_projects_table(slide, sourcing_data, position):
-    """
-    Add a Planned Projects table to the slide.
+#     """
+#     Add a Planned Projects table to the slide.
     
-    Args:
-        slide: The PowerPoint slide.
-        sourcing_data (DataFrame): Filtered sourcing event data for the vendor.
-        position (tuple): Coordinates (left, top) for the table.
-    """
-    rows, cols = sourcing_data.shape
-    table = slide.shapes.add_table(rows + 1, cols, Cm(position[0]), Cm(position[1]), Cm(10), Cm(5)).table
-    
-    # Add headers
+#     Args:
+#         slide: The PowerPoint slide.
+#         sourcing_data (DataFrame): Filtered sourcing event data for the vendor.
+#         position (tuple): Coordinates (left, top) for the table.
+#     """
+    # Define headers and column widths
     headers = ["Project", "Name", "Short Description", "Value (€m)"]
-    for col_idx, header in enumerate(headers):
-        table.cell(0, col_idx).text = header
+    col_widths = [4, 5, 7, 3]  # Total 19 cm
+    cols = len(headers)
     
+    # Limit to 3 rows maximum
+    rows = min(len(sourcing_data), 3) if not sourcing_data.empty else 1
+
+    # Create table with specific dimensions
+    table = slide.shapes.add_table(
+        rows + 1,
+        cols,
+        Cm(position[0]),
+        Cm(position[1]),
+        Cm(19),    # Total width changed to 19 cm
+        Cm(3)
+    ).table
+
+    # Set column widths
+    for i, width in enumerate(col_widths):
+        table.columns[i].width = Cm(width)
+
+    # Format headers
+    for col_idx, header in enumerate(headers):
+        cell = table.cell(0, col_idx)
+        cell.text = header
+        # Set font for header
+        paragraph = cell.text_frame.paragraphs[0]
+        paragraph.font.size = Pt(9)
+        paragraph.font.name = "Arial"
+        paragraph.font.bold = True
+
     # Reset the index of the sourcing data
     sourcing_data = sourcing_data.reset_index(drop=True)
 
     # Populate table rows
-    for row_idx, row in sourcing_data.iterrows():
-        table.cell(row_idx + 1, 0).text = str(row["[SPRJ]Project (Project Id)"])
-        table.cell(row_idx + 1, 1).text = str(row["[SPRJ]Project (Project Name)"])
-        table.cell(row_idx + 1, 2).text = ""  # Blank for user to fill
-        table.cell(row_idx + 1, 3).text = str(round(row["sum(Baseline Spend) (€m)"], 2))
+    if not sourcing_data.empty:
+        for row_idx in range(min(rows, len(sourcing_data))):
+            row = sourcing_data.iloc[row_idx]
+            cells = [
+                (str(row["[SPRJ]Project (Project Id)"])[:8], 0),
+                (str(row["[SPRJ]Project (Project Name)"])[:20], 1),
+                ("", 2),  # Blank for user to fill
+                (str(round(row["sum(Baseline Spend) (€m)"], 1)), 3)
+            ]
+            
+            for text, col in cells:
+                cell = table.cell(row_idx + 1, col)
+                cell.text = text
+                # Set font for cell
+                paragraph = cell.text_frame.paragraphs[0]
+                paragraph.font.size = Pt(9)
+                paragraph.font.name = "Arial"
+    else:
+        # Fill empty row with formatted cells
+        for col_idx in range(cols):
+            cell = table.cell(1, col_idx)
+            cell.text = ""
+            paragraph = cell.text_frame.paragraphs[0]
+            paragraph.font.size = Pt(9)
+            paragraph.font.name = "Arial"
+
 
 # Generate a bar chart for IT spend overview.
 def generate_it_spend_chart(vendor_name, spend_data, output_dir="plots"):
@@ -292,10 +367,12 @@ def generate_vendor_fact_sheets(template_path, output_dir, vendors, it_spend, co
         
         # Add IT Spend Overview Chart
         generate_it_spend_chart(vendor, vendor_spend.iloc[0], output_dir="plots")
-        add_image_to_slide(vendor_slide, f"plots/{vendor}_spend_chart.png", position=(13.5, 5), size=(10, 5))
+        
+        #left margin is 12cm, top margin is 5cm, width is 7cm, height is 5cm
+        add_image_to_slide(vendor_slide, f"plots/{vendor}_spend_chart.png", position=(13, 5), size=(9.2, 5))
         
         # Add Key Contracts Table
-        generate_key_contracts_table(vendor_slide, vendor_contracts, (13.5, 8.5))
+        generate_key_contracts_table(vendor_slide, vendor_contracts, (13.5, 10.6))
         
         # Add Planned Projects Table
         generate_planned_projects_table(vendor_slide, vendor_projects, (13.5, 15.3))
