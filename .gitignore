@@ -1,3 +1,5 @@
 clean_tables/
 mock_tables/
 temp/
+output/
+plots/
