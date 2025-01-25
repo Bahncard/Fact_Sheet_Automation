@@ -40,6 +40,8 @@ def generate_contracting_report():
     descriptions = ["Master Service Agreement", "Enterprise Agreement", "Cloud Services", "IT Support"]
     categories = ["IT Infrastructure", "Software", "Consulting"]
 
+    weights = [1] * len(known_vendors)  # All vendors have equal weight
+
     data = {
         "[PCW] Contract Id": contract_ids,
         "[PCW]Contract (Contract)": contracts,
@@ -62,12 +64,15 @@ def generate_sourcing_event():
     project_names = [f"Project {i}" for i in range(1, 201)]
     categories = ["IT Infrastructure", "Software", "Consulting"]
 
+    weights = [1] * len(known_vendors)  # All vendors have equal weight
+
     data = {
         "[SPRJ]Project (Project Id)": project_ids,
         "[SPRJ]Project (Project Name)": project_names,
         "[SPRJ] OneProcurement Category": [random.choice(categories) for _ in range(200)],
         "sum(Baseline Spend) (€m)": [round(random.uniform(5, 200), 2) for _ in range(200)],
-        "[SPT]Supplier (Supplier Name (L1))": [random.choice(known_vendors) for _ in range(200)]
+        "[SPT]Supplier (Supplier Name (L1))": [random.choice(known_vendors) for _ in range(200)],
+        "Short Description": [f"Description for Project {project_id}" for project_id in project_ids]
     }
 
     df = pd.DataFrame(data)

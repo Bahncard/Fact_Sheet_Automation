@@ -6,7 +6,7 @@ from pptx.util import Cm, Pt
 from pptx.enum.text import MSO_AUTO_SIZE
 import matplotlib.pyplot as plt
 from datetime import datetime
-
+import json
 
 def clean_data(input_dir=Path("mock_tables"), output_dir=Path("clean_tables")):
     """
@@ -102,7 +102,7 @@ def simulate_historical_spend(it_spend):
 
 
 
-def generate_key_contracts_table(slide, contracting_data, position):
+def generate_key_contracts_table(slide, contracting_data, position, row_height_cm=0.6):
     """
     Add a Key Contracts table to the slide.
     
@@ -129,8 +129,12 @@ def generate_key_contracts_table(slide, contracting_data, position):
         Cm(position[0]),
         Cm(position[1]),
         Cm(19),    # Total width changed to 19 cm
-        Cm(4)
+        Cm(rows * row_height_cm)  # Total height based on number of rows
     ).table
+
+    # Set fixed row height for all rows
+    for row_idx in range(rows + 1):
+        table.rows[row_idx].height = Cm(row_height_cm)
 
     # Set column widths
     for i, width in enumerate(col_widths):
@@ -181,7 +185,7 @@ def generate_key_contracts_table(slide, contracting_data, position):
             paragraph.font.size = Pt(9)
             paragraph.font.name = "Arial"
 
-def generate_planned_projects_table(slide, sourcing_data, position):
+def generate_planned_projects_table(slide, sourcing_data, position, row_height_cm=0.6):
 #     """
 #     Add a Planned Projects table to the slide.
     
@@ -205,8 +209,12 @@ def generate_planned_projects_table(slide, sourcing_data, position):
         Cm(position[0]),
         Cm(position[1]),
         Cm(19),    # Total width changed to 19 cm
-        Cm(3)
+        Cm(rows * row_height_cm)
     ).table
+
+    # Set fixed row height for all rows
+    for row_idx in range(rows + 1):
+        table.rows[row_idx].height = Cm(row_height_cm)
 
     # Set column widths
     for i, width in enumerate(col_widths):
@@ -232,8 +240,10 @@ def generate_planned_projects_table(slide, sourcing_data, position):
             cells = [
                 (str(row["[SPRJ]Project (Project Id)"])[:8], 0),
                 (str(row["[SPRJ]Project (Project Name)"])[:20], 1),
-                ("", 2),  # Blank for user to fill
+                (str(row["Short Description"])[:30], 2),
                 (str(round(row["sum(Baseline Spend) (€m)"], 1)), 3)
+                
+
             ]
             
             for text, col in cells:
@@ -301,19 +311,100 @@ def add_image_to_slide(slide, image_path, position, size):
     height = Cm(size[1])
     slide.shapes.add_picture(image_path, left, top, width, height)
 
-# Search and replace text in PowerPoint while preserving formatting
-def search_and_replace(search_str, repl_str, prs):
-    """"search and replace text in PowerPoint while preserving formatting"""
+# # Search and replace text in PowerPoint while preserving formatting
+# Issue: cannot hanlde multi-line replacements 
+# def search_and_replace(search_str, repl_str, prs):
+#     """"search and replace text in PowerPoint while preserving formatting"""
 
+#     for slide in prs.slides:
+#         for shape in slide.shapes:
+#             if shape.has_text_frame:
+#                 if(shape.text.find(search_str))!=-1:
+#                     text_frame = shape.text_frame
+#                     cur_text = text_frame.paragraphs[0].runs[0].text
+#                     new_text = cur_text.replace(str(search_str), str(repl_str))
+#                     text_frame.paragraphs[0].runs[0].text = new_text
+ 
+def search_and_replace(search_str, repl_str, prs):
+    """
+    Search and replace text in PowerPoint while preserving formatting.
+    Handles multi-line replacements while maintaining original font formatting.
+    """
     for slide in prs.slides:
         for shape in slide.shapes:
             if shape.has_text_frame:
-                if(shape.text.find(search_str))!=-1:
-                    text_frame = shape.text_frame
-                    cur_text = text_frame.paragraphs[0].runs[0].text
-                    new_text = cur_text.replace(str(search_str), str(repl_str))
-                    text_frame.paragraphs[0].runs[0].text = new_text
- 
+                text_frame = shape.text_frame
+                if search_str in text_frame.text:
+                    if len(text_frame.paragraphs) > 0:
+                        first_para = text_frame.paragraphs[0]
+                        if search_str in first_para.text:
+                            # Store original formatting from the first run
+                            original_font = first_para.runs[0].font
+                            
+                            # Clear existing paragraphs
+                            while len(text_frame.paragraphs) > 1:
+                                tr = text_frame._element.get_or_add_trPr()
+                                tr.remove(text_frame.paragraphs[-1]._element)
+                            
+                            # Split replacement text into lines
+                            lines = repl_str.split('\n')
+                            
+                            # Replace text in first paragraph while preserving format
+                            first_para.text = first_para.text.replace(search_str, lines[0])
+                            for run in first_para.runs:
+                                run.font.name = original_font.name
+                                run.font.size = original_font.size
+                                run.font.bold = original_font.bold
+                                run.font.italic = original_font.italic
+                            
+                            # Add new paragraphs for remaining lines
+                            for line in lines[1:]:
+                                p = text_frame.add_paragraph()
+                                run = p.add_run()
+                                run.text = line
+                                # Copy all font attributes from original
+                                run.font.name = original_font.name
+                                run.font.size = original_font.size
+                                run.font.bold = original_font.bold
+                                run.font.italic = original_font.italic
+
+
+def replace_vendor_placeholders(prs, vendor_name, vendor_data):
+    """
+    Replace all vendor-related placeholders in the presentation with actual data.
+    
+    Args:
+        prs: PowerPoint presentation object
+        vendor_name (str): Name of the vendor
+        vendor_data (dict): Vendor data from all_vendors_data for a specific vendor
+    """
+    # Generate timestamp
+    timestamp = f"VENDOR FACT SHEET - AS AT {datetime.now().strftime('%d.%m.%Y')}"
+
+    # Format financials with bullet points
+    financials_text = (
+        f"• Revenue: {vendor_data['Financials']['Revenue']}\n"
+        f"• Market Cap: {vendor_data['Financials']['MarketCap']}\n"
+        f"• Growth Rate: {vendor_data['Financials']['GrowthRate']}"
+    )
+    key_account_managers = "\n".join(f"• {manager}" for manager in vendor_data["KeyAccountManagers"])
+    key_stakeholders = "\n".join(f"• {stakeholder}" for stakeholder in vendor_data["KeyStakeholders"])
+    
+    # Define placeholder mappings
+    replacements = {
+        "[Timestamp]": timestamp,
+        "[Vendor Name]": vendor_name,
+        "[KeyAccountManagers]":key_account_managers,
+        "[KeyStakeholders]": key_stakeholders,
+        "[Financials]": financials_text,
+        "[MarketTrends]": vendor_data["MarketTrends"],
+        "[Strategy]": vendor_data["Strategy"],
+        "[Msg]": vendor_data["Msg"]
+    }
+    
+    # Replace each placeholder
+    for placeholder, value in replacements.items():
+        search_and_replace(placeholder, value, prs)
 
 
 def generate_vendor_fact_sheets(template_path, output_dir, vendors, it_spend, contracting_report, sourcing_event):
@@ -328,7 +419,10 @@ def generate_vendor_fact_sheets(template_path, output_dir, vendors, it_spend, co
         contracting_report (DataFrame): Contracting report data.
         sourcing_event (DataFrame): Sourcing event data.
     """
-
+     # Load vendor data from JSON file
+    with open('all_vendors_data.json', 'r') as f:
+        all_vendors_data = json.load(f)
+    
     # Debug 1 
     print(f"Total vendors: {len(vendors)}")
     print(f"IT spend shape: {it_spend.shape}")
@@ -360,16 +454,16 @@ def generate_vendor_fact_sheets(template_path, output_dir, vendors, it_spend, co
         print(f"Vendor contracts data shape: {vendor_contracts.shape}")
         print(f"Vendor projects data shape: {vendor_projects.shape}")
         
-        # Replace the placeholder text in the template
-        timestamp = f"VENDOR FACT SHEET - AS AT {datetime.now().strftime('%d.%m.%Y')}"
-        search_and_replace("[Timestamp]", timestamp, prs)
-        search_and_replace("[Vendor Name]", vendor, prs)
-        
+        # # Replace the placeholder text in the template
+        # timestamp = f"VENDOR FACT SHEET - AS AT {datetime.now().strftime('%d.%m.%Y')}"
+        # search_and_replace("[Timestamp]", timestamp, prs)
+        # search_and_replace("[Vendor Name]", vendor, prs)
+
         # Add IT Spend Overview Chart
         generate_it_spend_chart(vendor, vendor_spend.iloc[0], output_dir="plots")
         
         #left margin is 12cm, top margin is 5cm, width is 7cm, height is 5cm
-        add_image_to_slide(vendor_slide, f"plots/{vendor}_spend_chart.png", position=(13, 5), size=(9.2, 5))
+        add_image_to_slide(vendor_slide, f"plots/{vendor}_spend_chart.png", position=(13, 4.0), size=(9.2, 5.5))
         
         # Add Key Contracts Table
         generate_key_contracts_table(vendor_slide, vendor_contracts, (13.5, 10.6))
@@ -377,6 +471,10 @@ def generate_vendor_fact_sheets(template_path, output_dir, vendors, it_spend, co
         # Add Planned Projects Table
         generate_planned_projects_table(vendor_slide, vendor_projects, (13.5, 15.3))
     
+        # Replace vendor-specific placeholders
+        if vendor in all_vendors_data:
+            replace_vendor_placeholders(prs, vendor, all_vendors_data[vendor])  
+        
          # Save individual presentation for this vendor
         output_path = output_dir / f"{vendor}_Vendor_Fact_Sheet.pptx"
         prs.save(output_path)
