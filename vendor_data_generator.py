@@ -23,10 +23,12 @@ def get_vendor_financials(vendor_name):
     Provide financial information for {vendor_name}.
     Start your response with {{ and respond ONLY with a raw JSON object in this exact format:
     {{
-        "Revenue": "<number> USD",
-        "MarketCap": "<number> USD",
-        "GrowthRate": "<number>%"
+        "Revenue": "<number> USD (FY2023 or latest available)",
+        "MarketCap": "<number> USD (as of 2023 or latest available)",
+        "GrowthRate": "<number>% YoY (latest available)"
     }}
+    Provided data must be true. Never use simulated data or fake data. If the data of FY2023 is not available, use the data of FY2022, if not available, use the data of FY2021, if not available, use the data of FY2020.
+    Label each metric with the most precise timestamp available(keep it in the round brackets after the metric). If the year is available, use the year. If a more precise date, such as month or season, is available, use that instead.
     Do not include any markdown formatting, code blocks, or additional text.
     """
     
@@ -39,12 +41,11 @@ def get_vendor_financials(vendor_name):
             ],
             stream=False
         )
-        # Print the raw API response
-        print(f"Raw API response for {vendor_name}:")
-        print(response.choices[0].message.content)
+        # # Print the raw API response(string)
+        # print(response.choices[0].message.content) 
 
 
-        # Try to parse the response as JSON
+        # convert the json string to python dictionary
         try:
             return json.loads(response.choices[0].message.content)
         
@@ -66,6 +67,7 @@ def get_vendor_financials(vendor_name):
             "MarketCap": "Data not available",
             "GrowthRate": "Data not available"
         }
+    
 def get_market_trends(vendor_name):
     """
     Fetch market trends for a vendor using DeepSeek API
@@ -96,9 +98,9 @@ def get_market_trends(vendor_name):
 
 def main():
     # Test vendors
-    test_vendors = ["Microsoft", "AWS", "Google"]
+    test_vendors = ["AWS", "Microsoft", "Google", "Oracle", "IBM", "Dell"]
     
-    print("Starting test with 3 vendors...")
+    print("Starting test with provided vendors...")
     
     # Get data for each vendor and print immediately
     for vendor in test_vendors:
@@ -115,7 +117,8 @@ def main():
         print(f"Market Trends:\n{trends}")
         
         # Add delay to comply with API limits
-        time.sleep(2)
+        # deepseek api has no time limit
+        # time.sleep(2)
     
     # Generate complete test data
     print("\nGenerating complete test data...")

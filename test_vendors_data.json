@@ -1,0 +1,110 @@
+{
+    "AWS": {
+        "KeyAccountManagers": [
+            "AWS Manager 1, +49 123 456 7890",
+            "AWS Manager 2, +49 987 654 3210"
+        ],
+        "KeyStakeholders": [
+            "Stakeholder 1, AWS Team, Allianz Technology SE",
+            "Stakeholder 2, AWS Branch, Allianz Technology SE"
+        ],
+        "Financials": {
+            "Revenue": "90.8 billion USD (FY2023)",
+            "MarketCap": "1.6 trillion USD (as of 2023)",
+            "GrowthRate": "13% YoY (FY2023)"
+        },
+        "MarketTrends": "- AWS leads cloud market with ~32% share.  \n- Focus on AI/ML, serverless, and edge computing.  \n- Expanding globally with hybrid cloud solutions.",
+        "Strategy": "- Negotiate competitive pricing.\n- Enhance collaboration on strategic projects.",
+        "Msg": "- Strengthen partnership for mutual growth."
+    },
+    "Microsoft": {
+        "KeyAccountManagers": [
+            "Microsoft Manager 1, +49 123 456 7890",
+            "Microsoft Manager 2, +49 987 654 3210"
+        ],
+        "KeyStakeholders": [
+            "Stakeholder 1, Microsoft Team, Allianz Technology SE",
+            "Stakeholder 2, Microsoft Branch, Allianz Technology SE"
+        ],
+        "Financials": {
+            "Revenue": "211.915 billion USD (FY2023)",
+            "MarketCap": "3.0 trillion USD (as of March 2024)",
+            "GrowthRate": "7.0% YoY (FY2023)"
+        },
+        "MarketTrends": "- **Market position**: Dominates enterprise software, cloud (Azure #2 globally).  \n- **Technology focus**: AI (Copilot, OpenAI), cloud, and productivity tools.  \n- **Growth direction**: Expanding AI integration, cloud services, and enterprise solutions.",
+        "Strategy": "- Negotiate competitive pricing.\n- Enhance collaboration on strategic projects.",
+        "Msg": "- Strengthen partnership for mutual growth."
+    },
+    "Google": {
+        "KeyAccountManagers": [
+            "Google Manager 1, +49 123 456 7890",
+            "Google Manager 2, +49 987 654 3210"
+        ],
+        "KeyStakeholders": [
+            "Stakeholder 1, Google Team, Allianz Technology SE",
+            "Stakeholder 2, Google Branch, Allianz Technology SE"
+        ],
+        "Financials": {
+            "Revenue": "Data not available",
+            "MarketCap": "Data not available",
+            "GrowthRate": "Data not available"
+        },
+        "MarketTrends": "- Dominates search, ads, cloud; faces antitrust scrutiny.  \n- AI, ML, quantum computing investments drive innovation.  \n- Expanding cloud, YouTube, hardware for sustained growth.",
+        "Strategy": "- Negotiate competitive pricing.\n- Enhance collaboration on strategic projects.",
+        "Msg": "- Strengthen partnership for mutual growth."
+    },
+    "Oracle": {
+        "KeyAccountManagers": [
+            "Oracle Manager 1, +49 123 456 7890",
+            "Oracle Manager 2, +49 987 654 3210"
+        ],
+        "KeyStakeholders": [
+            "Stakeholder 1, Oracle Team, Allianz Technology SE",
+            "Stakeholder 2, Oracle Branch, Allianz Technology SE"
+        ],
+        "Financials": {
+            "Revenue": "Data not available",
+            "MarketCap": "Data not available",
+            "GrowthRate": "Data not available"
+        },
+        "MarketTrends": "- Leading in enterprise cloud and database solutions.  \n- Heavy focus on AI, machine learning, and autonomous systems.  \n- Expanding cloud infrastructure and SaaS offerings globally.",
+        "Strategy": "- Negotiate competitive pricing.\n- Enhance collaboration on strategic projects.",
+        "Msg": "- Strengthen partnership for mutual growth."
+    },
+    "IBM": {
+        "KeyAccountManagers": [
+            "IBM Manager 1, +49 123 456 7890",
+            "IBM Manager 2, +49 987 654 3210"
+        ],
+        "KeyStakeholders": [
+            "Stakeholder 1, IBM Team, Allianz Technology SE",
+            "Stakeholder 2, IBM Branch, Allianz Technology SE"
+        ],
+        "Financials": {
+            "Revenue": "60530 USD (FY2023)",
+            "MarketCap": "158.23B USD (as of 2023)",
+            "GrowthRate": "2.2% YoY (FY2023)"
+        },
+        "MarketTrends": "- Market trend data not available",
+        "Strategy": "- Negotiate competitive pricing.\n- Enhance collaboration on strategic projects.",
+        "Msg": "- Strengthen partnership for mutual growth."
+    },
+    "Dell": {
+        "KeyAccountManagers": [
+            "Dell Manager 1, +49 123 456 7890",
+            "Dell Manager 2, +49 987 654 3210"
+        ],
+        "KeyStakeholders": [
+            "Stakeholder 1, Dell Team, Allianz Technology SE",
+            "Stakeholder 2, Dell Branch, Allianz Technology SE"
+        ],
+        "Financials": {
+            "Revenue": "Data not available",
+            "MarketCap": "Data not available",
+            "GrowthRate": "Data not available"
+        },
+        "MarketTrends": "- Market trend data not available",
+        "Strategy": "- Negotiate competitive pricing.\n- Enhance collaboration on strategic projects.",
+        "Msg": "- Strengthen partnership for mutual growth."
+    }
+}
